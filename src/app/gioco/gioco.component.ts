@@ -25,7 +25,7 @@ export class GiocoComponent implements OnInit {
 
     initializeGame() {
         this.createBoards();
-        this.placeShips();
+        // this.placeShips();
     }
 
     createBoards() {
@@ -56,19 +56,19 @@ export class GiocoComponent implements OnInit {
         return tiles;
     }
 
-    placeShips() {
-        for (let i = 0; i < this.playersNumber; i++) {
-            // this.boards[this.currPlayer].chose();
-            this.currPlayer = (this.currPlayer++) % this.playersNumber;
-        }
-    }
-
-    // chose() {
-    //     for (let i = 0; i < 6; i++) {
-    //         this.getPosition(event);
-    //         alert('Piazzate ' + (i + 1) + 'navi');
+    // placeShips() {
+    //     for (let i = 0; i < this.playersNumber; i++) {
+    //         this.chose(i);
+    //         this.currPlayer = (this.currPlayer++) % this.playersNumber;
     //     }
     // }
+
+    chose(playerId: number) {
+        for (let i = 0; i < 6; i++) {
+            this.getPosition(event);
+            alert('Piazzate ' + (i + 1) + 'navi');
+        }
+    }
 
     getPosition(e: any) {
         const id = e.target.id;
@@ -77,7 +77,38 @@ export class GiocoComponent implements OnInit {
         const col = id.substring(3, 4);
         const tile = this.boards[boardId].tiles[row][col];
         alert('La casella è: ' + JSON.stringify(id));
-        this.boards[boardId].tiles[row][col].value = 'X';
+        if (this.boards[this.currPlayer].player.shipsToPlace || this.boards[(this.currPlayer + 1) % this.playersNumber]
+        .player.shipsToPlace) {
+            if (+boardId === this.currPlayer && this.boards[this.currPlayer].player.shipsToPlace) { // si posizionano le navi
+                this.boards[this.currPlayer].tiles[row][col].value = 'U';
+                this.boards[this.currPlayer].player.shipsToPlace--;
+                console.log('lo attuale giocatore è: ' + this.currPlayer + ' ' + this.boards[this.currPlayer].player.shipsToPlace);
+                if (!this.boards[this.currPlayer].player.shipsToPlace) {
+                    // this.currPlayer++;
+                    this.currPlayer = (this.currPlayer + 1) % this.playersNumber;
+                    console.log('lo attuale giocatore è: ' + this.currPlayer + ' ' + this.boards[this.currPlayer].player.shipsToPlace);
+                }
+            }
+        } else {
+            if (+boardId !== this.currPlayer) {
+                if (this.boards[boardId].tiles[row][col].value === 'U') {
+                    this.boards[boardId].tiles[row][col].value = 'X';
+                    this.boards[this.currPlayer].player.score++;
+                    if (this.boards[this.currPlayer].player.score === 3) {
+                        console.log('Hai vinto!');
+                        return;
+                    }
+                    this.currPlayer = (this.currPlayer + 1) % this.playersNumber;
+                } else if (this.boards[boardId].tiles[row][col].value === '0') {
+                    this.boards[boardId].tiles[row][col].value = 'M';
+                    this.currPlayer = (this.currPlayer + 1) % this.playersNumber;
+                } else {
+                    console.log('Hai già sparato su questa casella, spara di nuovo!');
+                }
+            } else {
+                console.log('Devi sparare nell\'altra griglia!');
+            }
+        }
     }
 
 

@@ -9,6 +9,7 @@ export class PlayerComponent implements OnInit {
 
   id: number;
   score = 0;
+  shipsToPlace = 3;
 
   constructor(myId: number) {
     this.id = myId;

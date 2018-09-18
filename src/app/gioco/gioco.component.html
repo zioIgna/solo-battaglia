@@ -12,7 +12,8 @@
                 (click) = "getPosition($event)"
                 id="t{{i}}{{j}}{{k}}">
                 <!-- {{ col.value === "X" ? "X" : "O"}} -->
-                {{ col.value === "X" ? "X" : col.value === "0"? "O" : "U"}}
+                <!-- {{ col.value === "X" ? "X" : col.value === "0"? "O" : "U"}} -->
+                {{col.value}}
             </td>
         </tr>
     </table>
