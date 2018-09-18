@@ -8,8 +8,11 @@
     </p>
     <table>
         <tr *ngFor="let row of board.tiles; let j = index">
-            <td *ngFor="let col of row; let k = index" id="t{{i}}{{j}}{{k}}">
-                {{ col.value === "X" ? "X" : "O"}}
+            <td *ngFor="let col of row; let k = index"
+                (click) = "getPosition($event)"
+                id="t{{i}}{{j}}{{k}}">
+                <!-- {{ col.value === "X" ? "X" : "O"}} -->
+                {{ col.value === "X" ? "X" : col.value === "0"? "O" : "U"}}
             </td>
         </tr>
     </table>

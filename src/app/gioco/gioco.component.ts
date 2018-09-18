@@ -30,8 +30,8 @@ export class GiocoComponent implements OnInit {
 
     createBoards() {
         for (let i = 0; i < this.playersNumber; i++) {
-            const player = new PlayerComponent();
-            player.id = i;
+            const player = new PlayerComponent(i);
+            // player.id = i;
             const board = new BoardComponent();
             board.player = player;
             // board.targetOrSelf = 0;
@@ -58,17 +58,17 @@ export class GiocoComponent implements OnInit {
 
     placeShips() {
         for (let i = 0; i < this.playersNumber; i++) {
-            this.boards[this.currPlayer].chose();
+            // this.boards[this.currPlayer].chose();
             this.currPlayer = (this.currPlayer++) % this.playersNumber;
         }
     }
 
-    chose() {
-        for (let i = 0; i < 6; i++) {
-            this.getPosition(event);
-            alert('Piazzate ' + (i + 1) + 'navi');
-        }
-    }
+    // chose() {
+    //     for (let i = 0; i < 6; i++) {
+    //         this.getPosition(event);
+    //         alert('Piazzate ' + (i + 1) + 'navi');
+    //     }
+    // }
 
     getPosition(e: any) {
         const id = e.target.id;
@@ -76,6 +76,8 @@ export class GiocoComponent implements OnInit {
         const row = id.substring(2, 3);
         const col = id.substring(3, 4);
         const tile = this.boards[boardId].tiles[row][col];
+        alert('La casella è: ' + JSON.stringify(id));
+        this.boards[boardId].tiles[row][col].value = 'X';
     }
 
 
