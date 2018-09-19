@@ -82,11 +82,11 @@ export class GiocoComponent implements OnInit {
             if (+boardId === this.currPlayer && this.boards[this.currPlayer].player.shipsToPlace) { // si posizionano le navi
                 this.boards[this.currPlayer].tiles[row][col].value = 'U';
                 this.boards[this.currPlayer].player.shipsToPlace--;
-                console.log('lo attuale giocatore è: ' + this.currPlayer + ' ' + this.boards[this.currPlayer].player.shipsToPlace);
+                console.log('l\' attuale giocatore è: ' + this.currPlayer + ' ' + this.boards[this.currPlayer].player.shipsToPlace);
                 if (!this.boards[this.currPlayer].player.shipsToPlace) {
                     // this.currPlayer++;
                     this.currPlayer = (this.currPlayer + 1) % this.playersNumber;
-                    console.log('lo attuale giocatore è: ' + this.currPlayer + ' ' + this.boards[this.currPlayer].player.shipsToPlace);
+                    console.log('l\' attuale giocatore è: ' + this.currPlayer + ' ' + this.boards[this.currPlayer].player.shipsToPlace);
                 }
             }
         } else {
@@ -95,7 +95,7 @@ export class GiocoComponent implements OnInit {
                     this.boards[boardId].tiles[row][col].value = 'X';
                     this.boards[this.currPlayer].player.score++;
                     if (this.boards[this.currPlayer].player.score === 3) {
-                        console.log('Hai vinto!');
+                        console.log('Giocatore ' + this.currPlayer + ', hai vinto!');
                         return;
                     }
                     this.currPlayer = (this.currPlayer + 1) % this.playersNumber;
