@@ -20,6 +20,7 @@ export class GiocoComponent implements OnInit {
     currPlayer = 0;
     playersNumber = 2;
     hits = 0;
+    loggedPlayers = 0;
 
     constructor() { }
 

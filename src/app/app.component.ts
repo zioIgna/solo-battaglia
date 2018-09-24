@@ -7,13 +7,13 @@ import { ConnectionService } from './connection.service';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-
   title = 'app';
+
+  constructor(private connessione: ConnectionService) {}
 
   ngOnInit(): void {
     this.connessione.getConnection();
     console.log(this.connessione.socket);
   }
 
-  constructor(private connessione: ConnectionService) {}
 }
