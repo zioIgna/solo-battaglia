@@ -167,7 +167,7 @@ export class GiocoComponent implements OnInit {
     // }
 
     ngOnInit() {
-        this.initializeGame();
+        // this.initializeGame();
         // this.initialize2();
         // this.placeShip();
     }

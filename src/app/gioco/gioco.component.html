@@ -2,23 +2,28 @@
 <div *ngFor="let cella of boards">{{cella}}</div>
 <hr> -->
 
-<div *ngFor="let board of boards; let i = index">
-    <p>Player: {{board.player.id}}
-        <!-- , Board: {{board.targetOrSelf === 0 ? 'target' : 'self'}} -->
-    </p>
-    <table>
-        <tr *ngFor="let row of board.tiles; let j = index">
-            <td *ngFor="let col of row; let k = index"
-                (click) = "getPosition($event)"
-                id="t{{i}}{{j}}{{k}}">
-                <!-- {{ col.value === "X" ? "X" : "O"}} -->
-                <!-- {{ col.value === "X" ? "X" : col.value === "0"? "O" : "U"}} -->
-                {{col.value}}
-            </td>
-        </tr>
-    </table>
+<!-- <div *ngIf="loggedPlayers === 2; else stillWaiting">
+    <div *ngFor="let board of boards; let i = index">
+        <p>Player: {{board.player.id}}
+            Board: {{board.targetOrSelf === 0 ? 'target' : 'self'}}
+        </p>
+        <table>
+            <tr *ngFor="let row of board.tiles; let j = index">
+                <td *ngFor="let col of row; let k = index"
+                    (click) = "getPosition($event)"
+                    id="t{{i}}{{j}}{{k}}">
+                    {{ col.value === "X" ? "X" : "O"}}
+                    {{ col.value === "X" ? "X" : col.value === "0"? "O" : "U"}}
+                    {{col.value}}
+                </td>
+            </tr>
+        </table>
+    </div>
 </div>
 
+<ng-template #stillWaiting>
+    Waiting for more players to join...
+</ng-template> -->
 
 <mat-form-field>
     <input matInput placeholder="row" #row>
