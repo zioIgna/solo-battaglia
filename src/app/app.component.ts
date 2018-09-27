@@ -17,9 +17,12 @@ export class AppComponent implements OnInit {
     console.log(this.connessione.socket);
 
     this.connessione.socket.on('new connection', (numPlayers) => {
-      this.gioco.loggedPlayers = numPlayers;
-      if (numPlayers === 2) {
-        this.gioco.initializeGame();
+      this.gioco.loggedPlayers = numPlayers.loggedPlayers;
+      console.log('the players number is: ' + this.gioco.loggedPlayers);
+      if (numPlayers.loggedPlayers === 2) {
+        console.log('finally 2 logged players!');
+        // this.gioco.initializeGame();
+        this.gioco.createBoards();
       }
     });
 

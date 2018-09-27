@@ -74,7 +74,7 @@ io.on('connection', function(socket){
     console.log("USER CONNECTED...");
     loggedPlayers++;
     console.log('Sono loggati ' + loggedPlayers + ' giocatori');
-    socket.broadcast.emit('new connection', loggedPlayers);
+    io.emit('new connection', {loggedPlayers: loggedPlayers});
     socket.on('disconnect', function () {
         loggedPlayers--;
         console.log('user disconnected');

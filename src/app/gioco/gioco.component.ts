@@ -1,3 +1,4 @@
+import { ConnectionService } from './../connection.service';
 import { Component, OnInit } from '@angular/core';
 import { MatFormField } from '@angular/material/form-field';
 import { MatButtonModule } from '../../../node_modules/@angular/material';
@@ -7,7 +8,8 @@ import { PlayerComponent } from './player/player.component';
 @Component({
     selector: 'app-gioco',
     templateUrl: './gioco.component.html',
-    styleUrls: ['./gioco.component.css']
+    styleUrls: ['./gioco.component.css'],
+    // providers: [GiocoComponent]
 })
 export class GiocoComponent implements OnInit {
 
@@ -22,10 +24,14 @@ export class GiocoComponent implements OnInit {
     hits = 0;
     loggedPlayers = 0;
 
-    constructor() { }
+    constructor(
+        // private connessione: ConnectionService
+    ) { }
 
     initializeGame() {
-        this.createBoards();
+        if (this.loggedPlayers === 2) {
+            this.createBoards();
+        }
         // this.placeShips();
     }
 
@@ -79,7 +85,7 @@ export class GiocoComponent implements OnInit {
         const tile = this.boards[boardId].tiles[row][col];
         alert('La casella è: ' + JSON.stringify(id));
         if (this.boards[this.currPlayer].player.shipsToPlace || this.boards[(this.currPlayer + 1) % this.playersNumber]
-        .player.shipsToPlace) {
+            .player.shipsToPlace) {
             if (+boardId === this.currPlayer && this.boards[this.currPlayer].player.shipsToPlace) { // si posizionano le navi
                 this.boards[this.currPlayer].tiles[row][col].value = 'U';
                 this.boards[this.currPlayer].player.shipsToPlace--;
@@ -167,6 +173,7 @@ export class GiocoComponent implements OnInit {
     // }
 
     ngOnInit() {
+        // this.connessione.getConnection();
         // this.initializeGame();
         // this.initialize2();
         // this.placeShip();

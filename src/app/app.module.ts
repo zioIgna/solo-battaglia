@@ -22,7 +22,7 @@ import { BoardComponent } from './gioco/board/board.component';
     MatInputModule,
     MatButtonModule
   ],
-  providers: [],
+  providers: [GiocoComponent],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

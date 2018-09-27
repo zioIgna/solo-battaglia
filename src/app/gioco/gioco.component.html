@@ -1,19 +1,19 @@
 <!-- <p>{{grid[2][2]}}</p>
 <div *ngFor="let cella of boards">{{cella}}</div>
 <hr> -->
-
-<!-- <div *ngIf="loggedPlayers === 2; else stillWaiting">
+<div>Players number is {{loggedPlayers}}</div>
+<div *ngIf="loggedPlayers === 2; else stillWaiting">
     <div *ngFor="let board of boards; let i = index">
         <p>Player: {{board.player.id}}
-            Board: {{board.targetOrSelf === 0 ? 'target' : 'self'}}
+            <!-- Board: {{board.targetOrSelf === 0 ? 'target' : 'self'}} -->
         </p>
         <table>
             <tr *ngFor="let row of board.tiles; let j = index">
                 <td *ngFor="let col of row; let k = index"
                     (click) = "getPosition($event)"
                     id="t{{i}}{{j}}{{k}}">
-                    {{ col.value === "X" ? "X" : "O"}}
-                    {{ col.value === "X" ? "X" : col.value === "0"? "O" : "U"}}
+                    <!-- {{ col.value === "X" ? "X" : "O"}}
+                    {{ col.value === "X" ? "X" : col.value === "0"? "O" : "U"}} -->
                     {{col.value}}
                 </td>
             </tr>
@@ -23,12 +23,12 @@
 
 <ng-template #stillWaiting>
     Waiting for more players to join...
-</ng-template> -->
+</ng-template>
 
-<mat-form-field>
+<!-- <mat-form-field>
     <input matInput placeholder="row" #row>
 </mat-form-field>
 <mat-form-field>
     <input matInput placeholder="col" #col>
 </mat-form-field>
-<button mat-raised-button color='primary' (click)="onFire(row, col)">Fire!</button>
+<button mat-raised-button color='primary' (click)="onFire(row, col)">Fire!</button> -->
