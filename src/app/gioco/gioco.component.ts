@@ -24,9 +24,7 @@ export class GiocoComponent implements OnInit {
     hits = 0;
     loggedPlayers = 0;
 
-    constructor(
-        // private connessione: ConnectionService
-    ) { }
+    constructor(private connessione: ConnectionService) { }
 
     initializeGame() {
         if (this.loggedPlayers === 2) {
@@ -177,6 +175,16 @@ export class GiocoComponent implements OnInit {
         // this.initializeGame();
         // this.initialize2();
         // this.placeShip();
+    
+        this.connessione.socket.on('new connection', (numPlayers) => {
+          this.loggedPlayers = numPlayers.loggedPlayers;
+          console.log('the players number is: ' + this.loggedPlayers);
+          if (numPlayers.loggedPlayers === 2) {
+            console.log('finally 2 logged players!');
+            // this.gioco.initializeGame();
+            this.createBoards();
+          }
+        });
     }
 
 }
