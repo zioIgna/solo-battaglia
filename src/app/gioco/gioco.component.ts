@@ -81,38 +81,60 @@ export class GiocoComponent implements OnInit {
         const row = id.substring(2, 3);
         const col = id.substring(3, 4);
         const tile = this.boards[boardId].tiles[row][col];
-        alert('La casella è: ' + JSON.stringify(id));
+        const ship = { boardId: boardId, row: row, col: col };
+        alert('La casella è: ' + JSON.stringify(id) + ' used: ' + JSON.stringify(tile.used));
         if (this.boards[this.currPlayer].player.shipsToPlace || this.boards[(this.currPlayer + 1) % this.playersNumber]
-            .player.shipsToPlace) {
-            if (+boardId === this.currPlayer && this.boards[this.currPlayer].player.shipsToPlace) { // si posizionano le navi
-                this.boards[this.currPlayer].tiles[row][col].value = 'U';
-                this.boards[this.currPlayer].player.shipsToPlace--;
-                console.log('l\' attuale giocatore è: ' + this.currPlayer + ' ' + this.boards[this.currPlayer].player.shipsToPlace);
-                if (!this.boards[this.currPlayer].player.shipsToPlace) {
-                    // this.currPlayer++;
-                    this.currPlayer = (this.currPlayer + 1) % this.playersNumber;
+            .player.shipsToPlace) {     // ci sono ancora navi da posizionare (per almeno uno dei giocatori)
+            // verifico corrispondenza tra chi fa la mossa e il turno del giocatore:
+            if (this.currPlayer === this.connessione.connectionId) {
+                if (+boardId === this.currPlayer && this.boards[this.currPlayer].player.shipsToPlace) { // si posizionano le navi
+                    // this.boards[this.currPlayer].tiles[row][col].value = 'U';
+                    this.boards[this.currPlayer].tiles[row][col].used = true;
+                    this.connessione.socket.emit('new ship', ship);
+                    this.boards[this.currPlayer].player.shipsToPlace--;
                     console.log('l\' attuale giocatore è: ' + this.currPlayer + ' ' + this.boards[this.currPlayer].player.shipsToPlace);
-                }
-            }
-        } else {
-            if (+boardId !== this.currPlayer) {
-                if (this.boards[boardId].tiles[row][col].value === 'U') {
-                    this.boards[boardId].tiles[row][col].value = 'X';
-                    this.boards[this.currPlayer].player.score++;
-                    if (this.boards[this.currPlayer].player.score === 3) {
-                        console.log('Giocatore ' + this.currPlayer + ', hai vinto!');
-                        return;
+                    if (!this.boards[this.currPlayer].player.shipsToPlace) {
+                        // this.currPlayer++;
+                        this.connessione.socket.emit('switch player');
+                        this.currPlayer = (this.currPlayer + 1) % this.playersNumber;
+                        console.log('l\' attuale giocatore è: ' + this.currPlayer + ' ' + this.boards[this.currPlayer].player.shipsToPlace);
                     }
-                    this.currPlayer = (this.currPlayer + 1) % this.playersNumber;
-                } else if (this.boards[boardId].tiles[row][col].value === '0') {
-                    this.boards[boardId].tiles[row][col].value = 'M';
-                    this.currPlayer = (this.currPlayer + 1) % this.playersNumber;
-                } else {
-                    console.log('Hai già sparato su questa casella, spara di nuovo!');
                 }
             } else {
-                console.log('Devi sparare nell\'altra griglia!');
+                console.log('It\'s not your turn to play');     // il giocatore che ha selezionato la casella non ha rispettato il turno
             }
+        } else {    // si comincia a sparare
+            if (this.currPlayer === this.connessione.connectionId) {
+                if (+boardId !== this.currPlayer) {     // sto sparando nella griglia dell'avversario
+                    // if (this.boards[boardId].tiles[row][col].value === 'U') {
+                    if (this.boards[boardId].tiles[row][col].used === true) {
+                        this.boards[boardId].tiles[row][col].value = 'X';
+                        this.connessione.socket.emit('hit', ship);
+                        this.boards[this.currPlayer].player.score++;
+                        if (this.boards[this.currPlayer].player.score === 3) {
+                            console.log('Giocatore ' + this.currPlayer + ', hai vinto!');
+                            return;
+                        }
+                        this.connessione.socket.emit('switch player');
+                        this.currPlayer = (this.currPlayer + 1) % this.playersNumber;
+                        console.log('l\' attuale giocatore è: ' + this.currPlayer);
+                    // } else if (this.boards[boardId].tiles[row][col].value === '0') {
+                    } else if (this.boards[boardId].tiles[row][col].used === false) {
+                        this.boards[boardId].tiles[row][col].value = 'M';
+                        this.connessione.socket.emit('miss', ship);
+                        this.connessione.socket.emit('switch player');
+                        this.currPlayer = (this.currPlayer + 1) % this.playersNumber;
+                        console.log('l\' attuale giocatore è: ' + this.currPlayer);
+                    } else {
+                        console.log('Hai già sparato su questa casella, spara di nuovo!');
+                    }
+                } else {        // sto sparando nella mia griglia: errore
+                    console.log('Devi sparare nell\'altra griglia!');
+                }
+            } else {
+                console.log('It\'s not your turn to play');     // il giocatore che ha selezionato la casella non ha rispettato il turno
+            }
+
         }
     }
 
@@ -175,15 +197,40 @@ export class GiocoComponent implements OnInit {
         // this.initializeGame();
         // this.initialize2();
         // this.placeShip();
-    
+
         this.connessione.socket.on('new connection', (numPlayers) => {
-          this.loggedPlayers = numPlayers.loggedPlayers;
-          console.log('the players number is: ' + this.loggedPlayers);
-          if (numPlayers.loggedPlayers === 2) {
-            console.log('finally 2 logged players!');
-            // this.gioco.initializeGame();
-            this.createBoards();
-          }
+            this.loggedPlayers = numPlayers.loggedPlayers;
+            console.log('the players number is: ' + this.loggedPlayers);
+
+            if (this.connessione.connectionId === -1) {
+                this.connessione.connectionId = this.loggedPlayers - 1;
+                console.log('my connectionId is: ' + this.connessione.connectionId);
+            }
+
+            if (numPlayers.loggedPlayers === 2 && this.boards.length < 2) {
+                console.log('finally 2 logged players!');
+                // this.gioco.initializeGame();
+                this.createBoards();
+            }
+        });
+
+
+        this.connessione.socket.on('new ship', (ship) => {
+            // this.boards[ship.boardId].tiles[ship.row][ship.col].value = 'U';
+            this.boards[ship.boardId].tiles[ship.row][ship.col].used = true;
+            this.boards[ship.boardId].player.shipsToPlace--;
+        });
+
+        this.connessione.socket.on('switch player', () => {
+            this.currPlayer = (this.currPlayer + 1) % this.playersNumber;
+        });
+
+        this.connessione.socket.on('hit', (ship) => {
+            this.boards[ship.boardId].tiles[ship.row][ship.col].value = 'X';
+        });
+
+        this.connessione.socket.on('miss', (ship) => {
+            this.boards[ship.boardId].tiles[ship.row][ship.col].value = 'M';
         });
     }
 

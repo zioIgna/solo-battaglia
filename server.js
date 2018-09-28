@@ -81,4 +81,20 @@ io.on('connection', function(socket){
         console.log('Sono loggati ' + loggedPlayers + ' giocatori');
     });
 
+    socket.on('new ship', function(ship){
+        socket.broadcast.emit('new ship', ship);
+    });
+
+    socket.on('hit', function(ship){
+        socket.broadcast.emit('hit', ship);
+    })
+
+    socket.on('miss', function(ship){
+        socket.broadcast.emit('miss', ship);
+    })
+
+
+    socket.on('switch player', function(){
+        socket.broadcast.emit('switch player');
+    });
 });
