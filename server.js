@@ -93,6 +93,9 @@ io.on('connection', function(socket){
         socket.broadcast.emit('miss', ship);
     })
 
+    socket.on('endGame', function(){
+        socket.broadcast.emit('endGame');
+    })
 
     socket.on('switch player', function(){
         socket.broadcast.emit('switch player');

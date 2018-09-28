@@ -2,16 +2,15 @@
 <div *ngFor="let cella of boards">{{cella}}</div>
 <hr> -->
 <div>Players number is {{loggedPlayers}}</div>
-<div *ngIf="loggedPlayers === 2; else stillWaiting">
+<div>You are player {{connessione.connectionId}}</div>
+<div *ngIf="loggedPlayers === 2  && !endGame; else stillWaiting">
     <div *ngFor="let board of boards; let i = index">
         <p>Player: {{board.player.id}}
             <!-- Board: {{board.targetOrSelf === 0 ? 'target' : 'self'}} -->
         </p>
         <table>
             <tr *ngFor="let row of board.tiles; let j = index">
-                <td *ngFor="let col of row; let k = index"
-                    (click) = "getPosition($event)"
-                    [class.show-ship]="connessione.connectionId == i && col.used"
+                <td *ngFor="let col of row; let k = index" (click)="getPosition($event)" [class.show-ship]="connessione.connectionId == i && col.used"
                     id="t{{i}}{{j}}{{k}}">
                     <!-- {{ col.value === "X" ? "X" : "O"}}
                     {{ col.value === "X" ? "X" : col.value === "0"? "O" : "U"}} -->
@@ -22,8 +21,13 @@
     </div>
 </div>
 
-<ng-template #stillWaiting>
+<ng-template *ngIf="!endGame; else gameOver" #stillWaiting>
     Waiting for more players to join...
+</ng-template>
+
+<ng-template #gameOver>
+    Game Over!
+    The winner is: player {{currPlayer}}
 </ng-template>
 
 <!-- <mat-form-field>

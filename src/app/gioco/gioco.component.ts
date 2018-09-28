@@ -23,6 +23,8 @@ export class GiocoComponent implements OnInit {
     playersNumber = 2;
     hits = 0;
     loggedPlayers = 0;
+    endGame = false;
+    // winner: number;
 
     constructor(private connessione: ConnectionService) { }
 
@@ -113,12 +115,15 @@ export class GiocoComponent implements OnInit {
                         this.boards[this.currPlayer].player.score++;
                         if (this.boards[this.currPlayer].player.score === 3) {
                             console.log('Giocatore ' + this.currPlayer + ', hai vinto!');
+                            this.endGame = true;
+                            // this.winner = this.currPlayer;
+                            this.connessione.socket.emit('endGame');    // , this.currPlayer
                             return;
                         }
                         this.connessione.socket.emit('switch player');
                         this.currPlayer = (this.currPlayer + 1) % this.playersNumber;
                         console.log('l\' attuale giocatore è: ' + this.currPlayer);
-                    // } else if (this.boards[boardId].tiles[row][col].value === '0') {
+                        // } else if (this.boards[boardId].tiles[row][col].value === '0') {
                     } else if (this.boards[boardId].tiles[row][col].used === false) {
                         this.boards[boardId].tiles[row][col].value = 'M';
                         this.connessione.socket.emit('miss', ship);
@@ -231,6 +236,10 @@ export class GiocoComponent implements OnInit {
 
         this.connessione.socket.on('miss', (ship) => {
             this.boards[ship.boardId].tiles[ship.row][ship.col].value = 'M';
+        });
+
+        this.connessione.socket.on('endGame', () => {
+            this.endGame = true;
         });
     }
 
