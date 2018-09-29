@@ -60,6 +60,7 @@ server.listen(port, function () {
 );
 
 let loggedPlayers = 0;
+let availableZero = true;
 
 app.use(bodyParser.json());
 
@@ -70,34 +71,43 @@ app.use((req, res, next) => {
     next();
 })
 
-io.on('connection', function(socket){
+io.on('connection', function (socket) {
     console.log("USER CONNECTED...");
     loggedPlayers++;
     console.log('Sono loggati ' + loggedPlayers + ' giocatori');
-    io.emit('new connection', {loggedPlayers: loggedPlayers});
+    // io.emit('new connection', {loggedPlayers: loggedPlayers});
+    io.emit('new connection', { loggedPlayers: loggedPlayers, av0: availableZero });
+    availableZero = !availableZero;
+
     socket.on('disconnect', function () {
         loggedPlayers--;
         console.log('user disconnected');
         console.log('Sono loggati ' + loggedPlayers + ' giocatori');
+        io.emit('user disconnected', loggedPlayers);
     });
 
-    socket.on('new ship', function(ship){
+    // funz per capire se la prossima nuova connectionId deve essere 0 o 1:
+    socket.on('checkAvailability', function (info) {
+        info === 0 ? availableZero = false : availableZero = true;
+    });
+
+    socket.on('new ship', function (ship) {
         socket.broadcast.emit('new ship', ship);
     });
 
-    socket.on('hit', function(ship){
+    socket.on('hit', function (ship) {
         socket.broadcast.emit('hit', ship);
     })
 
-    socket.on('miss', function(ship){
+    socket.on('miss', function (ship) {
         socket.broadcast.emit('miss', ship);
     })
 
-    socket.on('endGame', function(){
-        socket.broadcast.emit('endGame');
+    socket.on('endGame', function () {
+        io.emit('endGame');
     })
 
-    socket.on('switch player', function(){
+    socket.on('switch player', function () {
         socket.broadcast.emit('switch player');
     });
 });
