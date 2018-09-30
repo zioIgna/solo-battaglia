@@ -95,6 +95,10 @@ io.on('connection', function (socket) {
         socket.broadcast.emit('new ship', ship);
     });
 
+    socket.on('ships positioned', function(){
+        io.emit('ships positioned');
+    });
+
     socket.on('hit', function (ship) {
         socket.broadcast.emit('hit', ship);
     })

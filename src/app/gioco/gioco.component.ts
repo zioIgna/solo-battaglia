@@ -13,18 +13,19 @@ import { PlayerComponent } from './player/player.component';
 })
 export class GiocoComponent implements OnInit {
 
-    // grid: any[] = [];
-    // gridValues: any[] = [];
     boards: BoardComponent[] = [];
     boardSize = 5;
-    // numRow = 4;
-    // numCol = 4;
     currPlayer = 0;
     playersNumber = 2;
     hits = 0;
     loggedPlayers = 0;
+    positionedShips = 0;
     endGame = false;
+    // numRow = 4;
+    // numCol = 4;
     // winner: number;
+    // grid: any[] = [];
+    // gridValues: any[] = [];
 
     constructor(private connessione: ConnectionService) { }
 
@@ -85,26 +86,41 @@ export class GiocoComponent implements OnInit {
         const tile = this.boards[boardId].tiles[row][col];
         const ship = { boardId: boardId, row: row, col: col };
         alert('La casella è: ' + JSON.stringify(id) + ' used: ' + JSON.stringify(tile.used));
-        if (this.boards[this.currPlayer].player.shipsToPlace || this.boards[(this.currPlayer + 1) % this.playersNumber]
-            .player.shipsToPlace) {     // ci sono ancora navi da posizionare (per almeno uno dei giocatori)
-            // verifico corrispondenza tra chi fa la mossa e il turno del giocatore:
-            if (this.currPlayer === this.connessione.connectionId) {
-                if (+boardId === this.currPlayer && this.boards[this.currPlayer].player.shipsToPlace) { // si posizionano le navi
-                    // this.boards[this.currPlayer].tiles[row][col].value = 'U';
-                    this.boards[this.currPlayer].tiles[row][col].used = true;
-                    this.connessione.socket.emit('new ship', ship);
-                    this.boards[this.currPlayer].player.shipsToPlace--;
-                    console.log('l\' attuale giocatore è: ' + this.currPlayer + ' ' + this.boards[this.currPlayer].player.shipsToPlace);
-                    if (!this.boards[this.currPlayer].player.shipsToPlace) {
-                        // this.currPlayer++;
-                        this.connessione.socket.emit('switch player');
-                        this.currPlayer = (this.currPlayer + 1) % this.playersNumber;
-                        console.log('l\' attuale giocatore è: ' + this.currPlayer + ' ' + this.boards[this.currPlayer].player.shipsToPlace);
-                    }
+        // ci sono ancora navi da posizionare (per almeno uno dei giocatori) -> questa condizione va rivista perché
+        // il client non può conoscere se ci sono ancora navi da piazzare nell'altro client
+        // if (this.boards[this.currPlayer].player.shipsToPlace || this.boards[(this.currPlayer + 1) % this.playersNumber]
+        //     .player.shipsToPlace) {
+        if (this.positionedShips < 2) {
+            // verifico corrispondenza tra chi fa la mossa e la griglia del giocatore: ... in realtà non serve
+            // if (this.currPlayer === this.connessione.connectionId) {
+            // if (+boardId === this.currPlayer && this.boards[this.currPlayer].player.shipsToPlace) { // si posizionano le navi
+            // si posizionano le navi:
+            // if (+boardId === this.connessione.connectionId && this.boards[this.currPlayer].player.shipsToPlace) {
+            if (+boardId === this.connessione.connectionId && this.boards[this.connessione.connectionId].player.shipsToPlace) {
+                // this.boards[this.currPlayer].tiles[row][col].value = 'U';
+                // this.boards[this.currPlayer].tiles[row][col].used = true;
+                this.boards[this.connessione.connectionId].tiles[row][col].used = true;
+                this.connessione.socket.emit('new ship', ship);
+                // this.boards[this.currPlayer].player.shipsToPlace--;
+                this.boards[this.connessione.connectionId].player.shipsToPlace--;
+                console.log('l\' attuale giocatore è: ' + this.currPlayer + ' ' + this.boards[this.currPlayer].player.shipsToPlace);
+                // if (!this.boards[this.currPlayer].player.shipsToPlace) {
+                if (!this.boards[this.connessione.connectionId].player.shipsToPlace) {
+                    // this.currPlayer++;
+                    // this.connessione.socket.emit('switch player');
+                    // this.currPlayer = (this.currPlayer + 1) % this.playersNumber;
+                    // console.log('l\' attuale giocatore è: ' + this.currPlayer + ' ' + this.boards[this.currPlayer]
+                    // .player.shipsToPlace);
+                    this.connessione.socket.emit('ships positioned');
                 }
+            } else if (+boardId === this.connessione.connectionId && !this.boards[this.connessione.connectionId].player.shipsToPlace) {
+                console.log('Attendi che anche l\'altro giocatore abbia posizionato le sue navi');
             } else {
-                console.log('It\'s not your turn to play');     // il giocatore che ha selezionato la casella non ha rispettato il turno
+                console.log('Devi posizionare le navi sulla tua griglia, che è l\'altra...');
             }
+            // } else {
+            //     console.log('It\'s not your turn to play');     // il giocatore che ha selezionato la casella non ha rispettato il turno
+            // }
         } else {    // si comincia a sparare
             if (this.currPlayer === this.connessione.connectionId) {
                 if (+boardId !== this.currPlayer) {     // sto sparando nella griglia dell'avversario
@@ -147,114 +163,119 @@ export class GiocoComponent implements OnInit {
         }
     }
 
-        // 0 = empty, 1 = part of a ship, 2 = a sunken part of a ship, 3 = a missed shot
+    // 0 = empty, 1 = part of a ship, 2 = a sunken part of a ship, 3 = a missed shot
 
-        // initialize2() {
-        //     for (let i = 0; i < this.numRow; i++) {
-        //         this.grid[i] = [];
-        //         this.gridValues[i] = [];
-        //         for (let j = 0; j < this.numCol; j++) {
-        //             this.grid[i][j] = 0;
-        //             this.gridValues[i][j] = 0;
-        //         }
-        //     }
-        // }
+    // initialize2() {
+    //     for (let i = 0; i < this.numRow; i++) {
+    //         this.grid[i] = [];
+    //         this.gridValues[i] = [];
+    //         for (let j = 0; j < this.numCol; j++) {
+    //             this.grid[i][j] = 0;
+    //             this.gridValues[i][j] = 0;
+    //         }
+    //     }
+    // }
 
-        // selectPlayer(max) {
-        //     return Math.floor(Math.random() * Math.floor(max));
-        // }
+    // selectPlayer(max) {
+    //     return Math.floor(Math.random() * Math.floor(max));
+    // }
 
-        // placeShip() {
-        //     this.grid[0][0] = 1;
-        //     this.grid[0][1] = 1;
-        // }
+    // placeShip() {
+    //     this.grid[0][0] = 1;
+    //     this.grid[0][1] = 1;
+    // }
 
-        // refreshGrid() {
-        //     for (let i = 0; i < this.numRow; i++) {
-        //         for (let j = 0; j < this.numCol; j++) {
-        //             this.grid[i][j] = this.gridValues[i][j];
-        //         }
-        //     }
-        // }
+    // refreshGrid() {
+    //     for (let i = 0; i < this.numRow; i++) {
+    //         for (let j = 0; j < this.numCol; j++) {
+    //             this.grid[i][j] = this.gridValues[i][j];
+    //         }
+    //     }
+    // }
 
-        // onFire(row, col) {
-        //     const r = row.value;
-        //     const c = col.value;
-        //     console.log(r, c);
-        //     if (this.grid[r][c] === 1) {
-        //         this.gridValues[r][c] = 2;
-        //         this.hits++;
-        //         console.log('la griglia alla casella ' + r + ', ' + c + ' ha valore: ' + this.grid[r][c]);
-        //         console.log('number of hits: ', this.hits);
-        //         this.refreshGrid();
-        //         this.checkScore();
-        //     } else {
-        //         this.gridValues[r][c] = 3;
-        //         this.refreshGrid();
-        //     }
-        // }
+    // onFire(row, col) {
+    //     const r = row.value;
+    //     const c = col.value;
+    //     console.log(r, c);
+    //     if (this.grid[r][c] === 1) {
+    //         this.gridValues[r][c] = 2;
+    //         this.hits++;
+    //         console.log('la griglia alla casella ' + r + ', ' + c + ' ha valore: ' + this.grid[r][c]);
+    //         console.log('number of hits: ', this.hits);
+    //         this.refreshGrid();
+    //         this.checkScore();
+    //     } else {
+    //         this.gridValues[r][c] = 3;
+    //         this.refreshGrid();
+    //     }
+    // }
 
-        // checkScore() {
-        //     if (this.hits === 2) {
-        //         console.log('hai vinto!');
-        //     }
-        // }
+    // checkScore() {
+    //     if (this.hits === 2) {
+    //         console.log('hai vinto!');
+    //     }
+    // }
 
-        ngOnInit() {
-            // this.connessione.getConnection();
-            // this.initializeGame();
-            // this.initialize2();
-            // this.placeShip();
+    ngOnInit() {
+        // this.connessione.getConnection();
+        // this.initializeGame();
+        // this.initialize2();
+        // this.placeShip();
 
-            // this.connessione.socket.on('new connection', (numPlayers) => {
-            this.connessione.socket.on('new connection', (info) => {
-                this.loggedPlayers = info.loggedPlayers;
-                console.log('the players number is: ' + this.loggedPlayers);
+        // this.connessione.socket.on('new connection', (numPlayers) => {
+        this.connessione.socket.on('new connection', (info) => {
+            this.loggedPlayers = info.loggedPlayers;
+            console.log('the players number is: ' + this.loggedPlayers);
 
-                if (this.connessione.connectionId === -1) {
-                    // this.connessione.connectionId = this.loggedPlayers - 1;
-                    this.connessione.connectionId = info.av0 ? 0 : 1;
-                    console.log('my connectionId is: ' + this.connessione.connectionId);
-                }
+            if (this.connessione.connectionId === -1) {
+                // this.connessione.connectionId = this.loggedPlayers - 1;
+                this.connessione.connectionId = info.av0 ? 0 : 1;
+                console.log('my connectionId is: ' + this.connessione.connectionId);
+            }
 
-                // if (numPlayers.loggedPlayers === 2 && this.boards.length < 2) {    // this.boards !== null &&
-                if (info.loggedPlayers === 2 && this.boards.length < 2) {    // this.boards !== null &&
-                    console.log('finally 2 logged players!');
-                    // this.gioco.initializeGame();
-                    this.createBoards();
-                }
-            });
+            // if (numPlayers.loggedPlayers === 2 && this.boards.length < 2) {    // this.boards !== null &&
+            if (info.loggedPlayers === 2 && this.boards.length < 2) {    // this.boards !== null &&
+                console.log('finally 2 logged players!');
+                // this.gioco.initializeGame();
+                this.createBoards();
+            }
+        });
 
-            this.connessione.socket.on('user disconnected', (info) => {
-                this.loggedPlayers = info;
-                this.boards = [];
-                this.connessione.socket.emit('checkAvailability', this.connessione.connectionId);
-            });
+        this.connessione.socket.on('user disconnected', (info) => {
+            this.loggedPlayers = info;
+            this.boards = [];
+            this.connessione.socket.emit('checkAvailability', this.connessione.connectionId);
+        });
 
-            this.connessione.socket.on('new ship', (ship) => {
-                // this.boards[ship.boardId].tiles[ship.row][ship.col].value = 'U';
-                this.boards[ship.boardId].tiles[ship.row][ship.col].used = true;
-                this.boards[ship.boardId].player.shipsToPlace--;
-            });
+        this.connessione.socket.on('new ship', (ship) => {
+            // this.boards[ship.boardId].tiles[ship.row][ship.col].value = 'U';
+            this.boards[ship.boardId].tiles[ship.row][ship.col].used = true;
+            this.boards[ship.boardId].player.shipsToPlace--;
+        });
 
-            this.connessione.socket.on('switch player', () => {
-                this.currPlayer = (this.currPlayer + 1) % this.playersNumber;
-            });
+        this.connessione.socket.on('ships positioned', () => {
+            this.positionedShips++;
+            console.log('Posizionate ' + this.positionedShips + ' flotte');
+        });
 
-            this.connessione.socket.on('hit', (ship) => {
-                this.boards[ship.boardId].tiles[ship.row][ship.col].value = 'X';
-            });
+        this.connessione.socket.on('switch player', () => {
+            this.currPlayer = (this.currPlayer + 1) % this.playersNumber;
+        });
 
-            this.connessione.socket.on('miss', (ship) => {
-                this.boards[ship.boardId].tiles[ship.row][ship.col].value = 'M';
-            });
+        this.connessione.socket.on('hit', (ship) => {
+            this.boards[ship.boardId].tiles[ship.row][ship.col].value = 'X';
+        });
 
-            this.connessione.socket.on('endGame', () => {
-                this.endGame = true;
-                this.loggedPlayers = 0;
-                this.hits = 0;
-                this.boards = [];
-            });
-        }
+        this.connessione.socket.on('miss', (ship) => {
+            this.boards[ship.boardId].tiles[ship.row][ship.col].value = 'M';
+        });
 
+        this.connessione.socket.on('endGame', () => {
+            this.endGame = true;
+            this.loggedPlayers = 0;
+            this.hits = 0;
+            this.boards = [];
+        });
     }
+
+}
