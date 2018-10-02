@@ -277,6 +277,7 @@ export class GiocoComponent implements OnInit {
         this.connessione.socket.on('new connection', (info) => {
             this.loggedPlayers = info.loggedPlayers;
             console.log('the players number is: ' + this.loggedPlayers);
+            // console.log('endgame = ' +  this.endGame);
 
             if (this.connessione.connectionId === -1) {
                 // this.connessione.connectionId = this.loggedPlayers - 1;

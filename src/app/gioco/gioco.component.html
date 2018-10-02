@@ -25,8 +25,11 @@
     </div>
 </div>
 
-<ng-template *ngIf="!endGame; else gameOver" #stillWaiting>
-    Waiting for more players to join...
+
+<ng-template #stillWaiting>
+    <div *ngIf="!endGame; else gameOver">
+        Waiting for more players to join...
+    </div>
 </ng-template>
 
 <ng-template #gameOver>
