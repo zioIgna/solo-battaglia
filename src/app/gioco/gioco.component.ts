@@ -131,7 +131,8 @@ export class GiocoComponent implements OnInit {
                     // .player.shipsToPlace);
                     this.connessione.socket.emit('ships positioned');
                 }
-            } else if (+boardId === this.connessione.connectionId && !this.boards[this.connessione.connectionId].player.shipsToPlace) {
+            // +boardId === this.connessione.connectionId &&    // eliminato da condizione riga sotto
+            } else if (!this.boards[this.connessione.connectionId].player.shipsToPlace.length) {
                 console.log('Attendi che anche l\'altro giocatore abbia posizionato le sue navi');
             } else {
                 console.log('Devi posizionare le navi sulla tua griglia, che è l\'altra...');
@@ -296,6 +297,7 @@ export class GiocoComponent implements OnInit {
         this.connessione.socket.on('user disconnected', (info) => {
             this.loggedPlayers = info;
             this.boards = [];
+            this.positionedShips = 0;
             this.connessione.socket.emit('checkAvailability', this.connessione.connectionId);
         });
 
@@ -328,6 +330,7 @@ export class GiocoComponent implements OnInit {
             this.loggedPlayers = 0;
             this.hits = 0;
             this.boards = [];
+            this.positionedShips = 0;
         });
     }
 
