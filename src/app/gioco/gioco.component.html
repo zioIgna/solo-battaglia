@@ -4,6 +4,10 @@
 <div>Players number is {{loggedPlayers}}</div>
 <div>You are player {{connessione.connectionId}}</div>
 <div *ngIf="loggedPlayers === 2  && !endGame; else stillWaiting">
+    <div *ngIf="positionedShips < 2">Scegli l'orientamento della prossima nave (verticale di default):
+        <button (click)="setHorizontal()">Orizzontale</button><button (click)="setVertical()">Verticale</button>
+        <div>L'orientamento attuale è: {{orientation}}</div>
+    </div>
     <div *ngFor="let board of boards; let i = index">
         <p>Player: {{board.player.id}}
             <!-- Board: {{board.targetOrSelf === 0 ? 'target' : 'self'}} -->

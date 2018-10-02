@@ -91,8 +91,8 @@ io.on('connection', function (socket) {
         info === 0 ? availableZero = false : availableZero = true;
     });
 
-    socket.on('new ship', function (ship) {
-        socket.broadcast.emit('new ship', ship);
+    socket.on('new ship', function (coordinates) {
+        io.emit('new ship', coordinates);
     });
 
     socket.on('ships positioned', function(){
