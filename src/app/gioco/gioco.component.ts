@@ -1,3 +1,5 @@
+import { element } from 'protractor';
+import { Ship } from './ship.model';
 import { ConnectionService } from './../connection.service';
 import { Component, OnInit } from '@angular/core';
 import { MatFormField } from '@angular/material/form-field';
@@ -14,7 +16,7 @@ import { PlayerComponent } from './player/player.component';
 export class GiocoComponent implements OnInit {
 
     boards: BoardComponent[] = [];
-    boardSize = 5;
+    boardSize = 10;
     currPlayer = 0;
     playersNumber = 2;
     hits = 0;
@@ -60,7 +62,7 @@ export class GiocoComponent implements OnInit {
         for (let i = 0; i < this.boardSize; i++) {
             tiles[i] = [];
             for (let j = 0; j < this.boardSize; j++) {
-                tiles[i][j] = { used: false, value: '0', status: '' };
+                tiles[i][j] = { used: false, value: '0', shipId: '' };
             }
         }
         return tiles;
@@ -87,7 +89,7 @@ export class GiocoComponent implements OnInit {
         const col = id.substring(3, 4);
         const tile = this.boards[boardId].tiles[row][col];
         const ship = { boardId: boardId, row: row, col: col };
-        alert('La casella è: ' + JSON.stringify(id) + ' used: ' + JSON.stringify(tile.used));
+        alert('La casella è: ' + JSON.stringify(id) + ' used: ' + JSON.stringify(tile.used) + ' shipId: ' + tile.shipId);
         // ci sono ancora navi da posizionare (per almeno uno dei giocatori) -> questa condizione va rivista perché
         // il client non può conoscere se ci sono ancora navi da piazzare nell'altro client
         // if (this.boards[this.currPlayer].player.shipsToPlace || this.boards[(this.currPlayer + 1) % this.playersNumber]
@@ -101,19 +103,21 @@ export class GiocoComponent implements OnInit {
             if (+boardId === this.connessione.connectionId && this.boards[this.connessione.connectionId].player.shipsToPlace.length) {
                 // this.boards[this.currPlayer].tiles[row][col].value = 'U';
                 // this.boards[this.currPlayer].tiles[row][col].used = true;
-                if (this.checkPositioning(+boardId, row, col, +(this.boards[this.connessione.connectionId].player.shipsToPlace[0]),
+                if (this.checkPositioning(+boardId, row, col, +(this.boards[this.connessione.connectionId].player.shipsToPlace[0].size),
                     this.orientation)) {
                     // this.addShip(row, col, this.boards[this.connessione.connectionId].player.shipsToPlace[0], this.orientation);
                     const coordinates = {
                         boardId: boardId,
                         row: row,
                         col: col,
-                        size: this.boards[this.connessione.connectionId].player.shipsToPlace[0],
+                        shipId: this.boards[this.connessione.connectionId].player.shipsToPlace[0].id,
+                        size: this.boards[this.connessione.connectionId].player.shipsToPlace[0].size,
                         orientation: this.orientation
                     };
                     console.log(coordinates);
                     this.connessione.socket.emit('new ship', coordinates);
-                    this.boards[this.connessione.connectionId].player.shipsToPlace.shift();
+                    const lastShip = this.boards[this.connessione.connectionId].player.shipsToPlace.shift();
+                    this.boards[this.connessione.connectionId].player.opponentShips.push(lastShip);
                 } else {
                     console.log('Posizionamento impossibile, seleziona un\'altra casella');
                 }
@@ -121,7 +125,15 @@ export class GiocoComponent implements OnInit {
                 // this.connessione.socket.emit('new ship', ship);
                 // this.boards[this.currPlayer].player.shipsToPlace--;
                 // this.boards[this.connessione.connectionId].player.shipsToPlace--;
-                console.log('l\' attuale giocatore è: ' + this.currPlayer + ' ' + this.boards[this.currPlayer].player.shipsToPlace);
+                // console.log('l\' attuale giocatore è: ' + this.currPlayer + ' ' + this.boards[this.currPlayer].player.shipsToPlace
+                //     .forEach(function (element) {
+                //         return element.size;
+                //     })
+                //     );
+                console.log('l\'attuale giocatore è: ' + this.currPlayer);
+                this.boards[this.currPlayer].player.shipsToPlace.forEach(function (item) {
+                    console.log(item.id);
+                });
                 // if (!this.boards[this.currPlayer].player.shipsToPlace) {
                 if (!this.boards[this.connessione.connectionId].player.shipsToPlace.length) {
                     // this.currPlayer++;
@@ -129,9 +141,9 @@ export class GiocoComponent implements OnInit {
                     // this.currPlayer = (this.currPlayer + 1) % this.playersNumber;
                     // console.log('l\' attuale giocatore è: ' + this.currPlayer + ' ' + this.boards[this.currPlayer]
                     // .player.shipsToPlace);
-                    this.connessione.socket.emit('ships positioned');
+                    this.connessione.socket.emit('navy positioned');
                 }
-            // +boardId === this.connessione.connectionId &&    // eliminato da condizione riga sotto
+                // +boardId === this.connessione.connectionId &&    // eliminato da condizione riga sotto
             } else if (!this.boards[this.connessione.connectionId].player.shipsToPlace.length) {
                 console.log('Attendi che anche l\'altro giocatore abbia posizionato le sue navi');
             } else {
@@ -149,7 +161,22 @@ export class GiocoComponent implements OnInit {
                         // if (this.boards[boardId].tiles[row][col].value === 'U') {
                         if (this.boards[boardId].tiles[row][col].used === true) {
                             this.boards[boardId].tiles[row][col].value = 'X';
+                            // typecast a any per aggiungere un campo a ship:
+                            // (ship as any).shipId = this.boards[boardId].tiles[row][col].status;
+                            // oppure metodo alternativo per aggiungere un campo a un oggetto già definito:
+                            ship['shipId'] = this.boards[boardId].tiles[row][col].shipId;
+                            const hitShip = this.boards[boardId].tiles[row][col].shipId;
+                            const hitShipIndex = this.boards[this.currPlayer].player.opponentShips.findIndex((item) => item.id === hitShip);
+                            // console.log(hitShip + ' hits rimasti: ' + this.boards[this.currPlayer]
+                            // .player.opponentShips[hitShipIndex].hits);
                             this.connessione.socket.emit('hit', ship);
+                            // this.boards[this.currPlayer].player.opponentShips[id[hitShip]].
+                            // this.boards[this.currPlayer].player.opponentShips[id[hitShip]].hits--;
+                            // if (!this.boards[this.currPlayer].player.opponentShips[id[hitShip]].hits) {
+                            if (--this.boards[this.currPlayer].player.opponentShips[hitShipIndex].hits === 0) {
+                                // if (this.boards[this.currPlayer].player.opponentShips.find(item => item.id === hitShip).hits-- === 0) {
+                                console.log('Hai affondato la nave ' + hitShip);
+                            }
                             this.boards[this.currPlayer].player.score++;
                             if (this.boards[this.currPlayer].player.score === this.hitsToWin) {
                                 console.log('Giocatore ' + this.currPlayer + ', hai vinto!');
@@ -194,15 +221,18 @@ export class GiocoComponent implements OnInit {
         }
     }
 
-    addShip(boardId: number, row: number, col: number, size: number, orientation: string) {
+    addShip(boardId: number, row: number, col: number, shipId: number, size: number, orientation: string) {
         if (size === 1) {
             this.boards[boardId].tiles[row][col].used = true;
+            this.boards[boardId].tiles[row][col].shipId = shipId;
         } else if (orientation === 'horizontal') {
             this.boards[boardId].tiles[row][col].used = true;
-            this.addShip(boardId, row, +col + 1, size - 1, orientation);
+            this.boards[boardId].tiles[row][col].shipId = shipId;
+            this.addShip(boardId, row, +col + 1, shipId, size - 1, orientation);
         } else {
             this.boards[boardId].tiles[row][col].used = true;
-            this.addShip(boardId, +row + 1, col, size - 1, orientation);
+            this.boards[boardId].tiles[row][col].shipId = shipId;
+            this.addShip(boardId, +row + 1, col, shipId, size - 1, orientation);
         }
     }
 
@@ -267,6 +297,10 @@ export class GiocoComponent implements OnInit {
     //     }
     // }
 
+    // sumShipSize(arr: Ship[]) {
+
+    // }
+
     ngOnInit() {
         // this.connessione.getConnection();
         // this.initializeGame();
@@ -290,7 +324,13 @@ export class GiocoComponent implements OnInit {
                 console.log('finally 2 logged players!');
                 // this.gioco.initializeGame();
                 this.createBoards();
-                this.hitsToWin = this.boards[this.connessione.connectionId].player.shipsToPlace.reduce((a, b) => a + b);
+                // this.hitsToWin = Object.keys(this.boards[this.connessione.connectionId].player.shipsToPlace)
+                //     .reduce(function (previous, key) {
+                //         return previous + this.boards[this.connessione.connectionId].player.shipsToPlace[key].size;
+                //     }, 0);
+                for (const ship of this.boards[this.connessione.connectionId].player.shipsToPlace) {
+                    this.hitsToWin += ship.size;
+                }
                 console.log('hitsToWin = ' + this.hitsToWin);
             }
         });
@@ -299,6 +339,7 @@ export class GiocoComponent implements OnInit {
             this.loggedPlayers = info;
             this.boards = [];
             this.positionedShips = 0;
+            this.hitsToWin = 0;
             this.connessione.socket.emit('checkAvailability', this.connessione.connectionId);
         });
 
@@ -306,10 +347,12 @@ export class GiocoComponent implements OnInit {
             // this.boards[ship.boardId].tiles[ship.row][ship.col].value = 'U';
             // this.boards[ship.boardId].tiles[ship.row][ship.col].used = true;
             // this.boards[ship.boardId].player.shipsToPlace--;
-            this.addShip(coordinates.boardId, coordinates.row, coordinates.col, coordinates.size, coordinates.orientation);
+            this.addShip(
+                coordinates.boardId, coordinates.row, coordinates.col, coordinates.shipId, coordinates.size, coordinates.orientation
+            );
         });
 
-        this.connessione.socket.on('ships positioned', () => {
+        this.connessione.socket.on('navy positioned', () => {
             this.positionedShips++;
             console.log('Posizionate ' + this.positionedShips + ' flotte');
         });

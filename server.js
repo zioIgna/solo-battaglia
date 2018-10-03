@@ -95,8 +95,8 @@ io.on('connection', function (socket) {
         io.emit('new ship', coordinates);
     });
 
-    socket.on('ships positioned', function(){
-        io.emit('ships positioned');
+    socket.on('navy positioned', function(){
+        io.emit('navy positioned');
     });
 
     socket.on('hit', function (ship) {
