@@ -130,8 +130,11 @@ export class GiocoComponent implements OnInit {
                 //         return element.size;
                 //     })
                 //     );
-                console.log('l\'attuale giocatore è: ' + this.currPlayer);
-                this.boards[this.currPlayer].player.shipsToPlace.forEach(function (item) {
+                // console.log('l\'attuale giocatore è: ' + this.currPlayer);
+                if (this.boards[this.connessione.connectionId].player.shipsToPlace.length) {
+                    console.log('Ti rimangono da posizionare le seguenti navi:');
+                }
+                this.boards[this.connessione.connectionId].player.shipsToPlace.forEach(function (item) {
                     console.log(item.id);
                 });
                 // if (!this.boards[this.currPlayer].player.shipsToPlace) {
@@ -359,6 +362,7 @@ export class GiocoComponent implements OnInit {
 
         this.connessione.socket.on('switch player', () => {
             this.currPlayer = (this.currPlayer + 1) % this.playersNumber;
+            console.log('l\' attuale giocatore è: ' + this.currPlayer);
         });
 
         this.connessione.socket.on('hit', (ship) => {
